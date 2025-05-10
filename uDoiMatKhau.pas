@@ -4,17 +4,19 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls;
 
 type
   TfrmDoiMatKhau = class(TForm)
     Label2: TLabel;
+    Panel1: TPanel;
+    GroupBox1: TGroupBox;
     lblMatKhauMoi: TLabel;
     lblXacNhanMatKhauMoi: TLabel;
     edtMatKhauMoi: TEdit;
     edtXacNhanMatKhau: TEdit;
-    btnXacNhan: TButton;
-    btnHuy: TButton;
+    btnXacNhan: TBitBtn;
+    btnHuy: TBitBtn;
     procedure btnXacNhanClick(Sender: TObject);
     procedure btnHuyClick(Sender: TObject);
   private

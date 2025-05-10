@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls;
 
 type
   TfrmAdminDoiMK = class(TForm)
@@ -14,9 +14,11 @@ type
     edtMatKhauMoiAdmin: TEdit;
     Label3: TLabel;
     edtXacNhanMKAdmin: TEdit;
-    btnXacNhanDoiMK: TButton;
-    btnHuyDoiMK: TButton;
+    btnXacNhanDoiMK: TBitBtn;
+    btnHuyDoiMK: TBitBtn;
     Label4: TLabel;
+    pnlMain: TPanel;
+    pnlHeader: TPanel;
     procedure btnXacNhanDoiMKClick(Sender: TObject);
   private
     { Private declarations }

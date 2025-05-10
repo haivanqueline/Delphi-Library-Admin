@@ -3,135 +3,172 @@ object frmAdminDoiMK: TfrmAdminDoiMK
   Top = 0
   BorderStyle = bsDialog
   Caption = #272#7893'i M'#7853't Kh'#7849'u'
-  ClientHeight = 327
-  ClientWidth = 574
-  Color = clBtnFace
+  ClientHeight = 360
+  ClientWidth = 600
+  Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poScreenCenter
+  StyleName = 'Luna'
   TextHeight = 15
-  object Label1: TLabel
-    Left = 173
-    Top = 94
-    Width = 111
-    Height = 28
-    Caption = 'M'#7853't kh'#7849'u c'#361':'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label2: TLabel
-    Left = 159
-    Top = 150
-    Width = 125
-    Height = 28
-    Caption = 'M'#7853't kh'#7849'u m'#7899'i:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label3: TLabel
-    Left = 127
-    Top = 206
-    Width = 157
-    Height = 28
-    Caption = 'X'#225'c nh'#7853'n MK m'#7899'i:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object Label4: TLabel
-    Left = 216
-    Top = 24
-    Width = 166
-    Height = 38
-    Caption = #272#7893'i m'#7853't kh'#7849'u'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clFuchsia
-    Font.Height = -28
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-  end
-  object edtMatKhauCuAdmin: TEdit
-    Left = 296
-    Top = 91
-    Width = 193
-    Height = 36
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
+  object pnlHeader: TPanel
+    Left = 0
+    Top = 0
+    Width = 600
+    Height = 60
+    Align = alTop
+    BevelOuter = bvNone
+    Color = clGradientActiveCaption
+    ParentBackground = False
     TabOrder = 0
+    ExplicitWidth = 594
+    object Label4: TLabel
+      Left = 0
+      Top = 0
+      Width = 600
+      Height = 60
+      Align = alClient
+      Alignment = taCenter
+      Caption = #272#7893'i m'#7853't kh'#7849'u'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clNavy
+      Font.Height = -24
+      Font.Name = 'Segoe UI'
+      Font.Style = [fsBold]
+      ParentFont = False
+      Layout = tlCenter
+      ExplicitWidth = 153
+      ExplicitHeight = 32
+    end
   end
-  object edtMatKhauMoiAdmin: TEdit
-    Left = 296
-    Top = 147
-    Width = 193
-    Height = 36
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
+  object pnlMain: TPanel
+    Left = 0
+    Top = 60
+    Width = 600
+    Height = 300
+    Align = alClient
+    BevelOuter = bvNone
+    Color = clWhite
+    ParentBackground = False
     TabOrder = 1
-  end
-  object edtXacNhanMKAdmin: TEdit
-    Left = 296
-    Top = 203
-    Width = 193
-    Height = 36
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 2
-  end
-  object btnXacNhanDoiMK: TButton
-    Left = 127
-    Top = 262
-    Width = 99
-    Height = 41
-    Caption = 'X'#225'c nh'#7853'n'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-    OnClick = btnXacNhanDoiMKClick
-  end
-  object btnHuyDoiMK: TButton
-    Left = 350
-    Top = 262
-    Width = 99
-    Height = 41
-    Caption = 'Hu'#7927
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -20
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ModalResult = 2
-    ParentFont = False
-    TabOrder = 4
+    ExplicitWidth = 594
+    ExplicitHeight = 283
+    object Label1: TLabel
+      Left = 120
+      Top = 40
+      Width = 88
+      Height = 21
+      Caption = 'M'#7853't kh'#7849'u c'#361':'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clNavy
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label2: TLabel
+      Left = 120
+      Top = 100
+      Width = 100
+      Height = 21
+      Caption = 'M'#7853't kh'#7849'u m'#7899'i:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clNavy
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Label3: TLabel
+      Left = 120
+      Top = 160
+      Width = 125
+      Height = 21
+      Caption = 'X'#225'c nh'#7853'n MK m'#7899'i:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clNavy
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+    end
+    object edtMatKhauCuAdmin: TEdit
+      Left = 300
+      Top = 40
+      Width = 200
+      Height = 25
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      PasswordChar = '*'
+      TabOrder = 0
+    end
+    object edtMatKhauMoiAdmin: TEdit
+      Left = 300
+      Top = 100
+      Width = 200
+      Height = 25
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      PasswordChar = '*'
+      TabOrder = 1
+    end
+    object edtXacNhanMKAdmin: TEdit
+      Left = 300
+      Top = 160
+      Width = 200
+      Height = 25
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      PasswordChar = '*'
+      TabOrder = 2
+    end
+    object btnXacNhanDoiMK: TBitBtn
+      Left = 180
+      Top = 220
+      Width = 100
+      Height = 40
+      Caption = 'X'#225'c nh'#7853'n'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      Kind = bkOK
+      NumGlyphs = 2
+      ParentFont = False
+      TabOrder = 3
+      OnClick = btnXacNhanDoiMKClick
+    end
+    object btnHuyDoiMK: TBitBtn
+      Left = 320
+      Top = 220
+      Width = 100
+      Height = 40
+      Caption = 'Hu'#7927
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      Kind = bkCancel
+      NumGlyphs = 2
+      ParentFont = False
+      TabOrder = 4
+    end
   end
 end

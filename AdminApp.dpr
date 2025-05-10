@@ -10,13 +10,17 @@ uses
   uThemSuaThuThu in 'uThemSuaThuThu.pas' {frmThemSuaThuThu},
   uPhanQuyen in 'uPhanQuyen.pas' {frmPhanQuyen},
   uAdminDoiMK in 'uAdminDoiMK.pas' {frmAdminDoiMK},
-  uPasswordUtils in 'uPasswordUtils.pas';
+  uPasswordUtils in 'uPasswordUtils.pas',
+  uSessionManager in 'uSessionManager.pas',
+  Vcl.Themes,
+  Vcl.Styles;
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
+  TStyleManager.TrySetStyle('Luna');
   Application.CreateForm(TfrmAdminLogin, frmAdminLogin);
   Application.CreateForm(TfrmAdminMain, frmAdminMain);
   Application.CreateForm(TDM_Admin, DM_Admin);

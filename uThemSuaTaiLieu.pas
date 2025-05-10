@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Samples.Spin,
-  Vcl.ExtCtrls, Vcl.ComCtrls;
+  Vcl.ExtCtrls, Vcl.ComCtrls, System.DateUtils, Data.DB, Vcl.Buttons;
 
 type
   TfrmThemSuaTaiLieu = class(TForm)
@@ -32,17 +32,21 @@ type
     memMoTa: TMemo;
     edtSoLuongCon: TEdit;
     edtSoLuong: TEdit;
-    btnLuuTL: TButton;
-    btnHuyTL: TButton;
+    btnLuuTL: TBitBtn;
+    btnHuyTL: TBitBtn;
     edtNamXB: TSpinEdit;
+    pnlMain: TPanel;
     procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure cboLoaiTLChange(Sender: TObject);
     procedure btnLuuTLClick(Sender: TObject);
+    procedure btnHuyTLClick(Sender: TObject);
   private
     { Private declarations }
     FTaiLieuIDCanSua: Int64;
     FCheDo: string; // 'Them' hoặc 'Sua'
     procedure LoadDataForEdit;
+    procedure ResetForm;
     function ValidateInput: Boolean;
     function GenerateMaTaiLieu(LoaiTL: string): string;
   public
@@ -60,12 +64,34 @@ implementation
 
 uses UnitAdminDM, FireDAC.Comp.Client, FireDAC.Stan.Param;
 
+procedure TfrmThemSuaTaiLieu.ResetForm;
+begin
+  // Xóa các trường nhập liệu
+  edtMaTL.Text := '';
+  edtTenTL.Text := '';
+  edtTacGia.Text := '';
+  edtNXB.Text := '';
+  edtNamXB.Value := YearOf(Date); // Đặt năm hiện tại
+  cboLoaiTL.ItemIndex := -1;
+  edtTenLoaiTL.Text := '';
+  edtKhoa.Text := '';
+  edtNganh.Text := '';
+  memMoTa.Text := '';
+  edtSoLuong.Text := '';
+  edtSoLuongCon.Text := '';
+  Self.Caption := 'Thêm Tài Liệu Mới';
+  FCheDo := 'Them';
+  FTaiLieuIDCanSua := -1;
+  edtMaTL.ReadOnly := True;
+  // Đảm bảo các trường nhập số lượng có thể chỉnh sửa
+  edtSoLuong.ReadOnly := False;
+  edtSoLuongCon.ReadOnly := False;
+end;
 
 procedure TfrmThemSuaTaiLieu.LoadDataForEdit;
 var
   Query: TFDQuery;
 begin
-  // Chỉ tải dữ liệu nếu ở chế độ Sửa và có ID hợp lệ
   if (FCheDo <> 'Sua') or (FTaiLieuIDCanSua <= 0) then Exit;
 
   Query := TFDQuery.Create(nil);
@@ -90,18 +116,25 @@ begin
       memMoTa.Text := Query.FieldByName('MoTa').AsString;
       edtSoLuong.Text := Query.FieldByName('SoLuong').AsString;
       edtSoLuongCon.Text := Query.FieldByName('SoLuongCon').AsString;
-      edtMaTL.ReadOnly := False; // Không cho sửa Mã Tài liệu khi sửa? Tùy yêu cầu
+      edtMaTL.ReadOnly := True; // Không cho sửa Mã Tài liệu khi sửa
+      // Đảm bảo các trường nhập số lượng có thể chỉnh sửa
+      edtSoLuong.ReadOnly := False;
+      edtSoLuongCon.ReadOnly := False;
     end
     else
     begin
       ShowMessage('Không tìm thấy tài liệu với ID = ' + IntToStr(FTaiLieuIDCanSua));
-      ModalResult := mrCancel; // Đóng form nếu không tìm thấy
+      ModalResult := mrCancel;
     end;
   finally
     Query.Free;
   end;
 end;
 
+procedure TfrmThemSuaTaiLieu.btnHuyTLClick(Sender: TObject);
+begin
+  ModalResult := mrCancel;
+end;
 
 procedure TfrmThemSuaTaiLieu.btnLuuTLClick(Sender: TObject);
 var
@@ -109,7 +142,11 @@ var
   SQL: string;
   MaTaiLieu: string;
 begin
-  if not ValidateInput then Exit;
+  // Kiểm tra đầu vào, nếu không hợp lệ thì không đóng form
+  if not ValidateInput then
+  begin
+    Exit; // Thoát hàm nhưng không đóng form
+  end;
 
   Query := TFDQuery.Create(nil);
   try
@@ -117,7 +154,6 @@ begin
     try
       if FCheDo = 'Them' then
       begin
-        // Tạo mã tài liệu tự động
         if cboLoaiTL.ItemIndex < 0 then
         begin
           ShowMessage('Vui lòng chọn Loại tài liệu trước khi lưu.');
@@ -125,51 +161,70 @@ begin
           Exit;
         end;
         MaTaiLieu := GenerateMaTaiLieu(cboLoaiTL.Text);
-        edtMaTL.Text := MaTaiLieu; // Hiển thị mã vừa tạo
+        edtMaTL.Text := MaTaiLieu;
 
-        // Câu lệnh INSERT
         SQL := 'INSERT INTO TaiLieuTongHop (MaTaiLieu, TenTaiLieu, TenTacGia, NhaXB, NamXB, ' +
                'LoaiTL, TenLoaiTL, Khoa, Nganh, MoTa, SoLuong, SoLuongCon) ' +
                'VALUES (:MaTaiLieu, :TenTaiLieu, :TenTacGia, :NhaXB, :NamXB, ' +
                ':LoaiTL, :TenLoaiTL, :Khoa, :Nganh, :MoTa, :SoLuong, :SoLuongCon)';
         Query.SQL.Text := SQL;
-        Query.ParamByName('MaTaiLieu').AsString := MaTaiLieu;
-        Query.ParamByName('TenTaiLieu').AsString := Trim(edtTenTL.Text);
-        Query.ParamByName('TenTacGia').AsString := Trim(edtTacGia.Text);
-        Query.ParamByName('NhaXB').AsString := Trim(edtNXB.Text);
+        Query.ParamByName('MaTaiLieu').DataType := ftWideString;
+        Query.ParamByName('MaTaiLieu').AsWideString := MaTaiLieu;
+        Query.ParamByName('TenTaiLieu').DataType := ftWideString;
+        Query.ParamByName('TenTaiLieu').AsWideString := Trim(edtTenTL.Text);
+        Query.ParamByName('TenTacGia').DataType := ftWideString;
+        Query.ParamByName('TenTacGia').AsWideString := Trim(edtTacGia.Text);
+        Query.ParamByName('NhaXB').DataType := ftWideString;
+        Query.ParamByName('NhaXB').AsWideString := Trim(edtNXB.Text);
         Query.ParamByName('NamXB').AsInteger := edtNamXB.Value;
-        Query.ParamByName('LoaiTL').AsString := cboLoaiTL.Text;
-        Query.ParamByName('TenLoaiTL').AsString := Trim(edtTenLoaiTL.Text);
-        Query.ParamByName('Khoa').AsString := Trim(edtKhoa.Text);
-        Query.ParamByName('Nganh').AsString := Trim(edtNganh.Text);
-        Query.ParamByName('MoTa').AsString := Trim(memMoTa.Text);
+        Query.ParamByName('LoaiTL').DataType := ftWideString;
+        Query.ParamByName('LoaiTL').AsWideString := cboLoaiTL.Text;
+        Query.ParamByName('TenLoaiTL').DataType := ftWideString;
+        Query.ParamByName('TenLoaiTL').AsWideString := Trim(edtTenLoaiTL.Text);
+        Query.ParamByName('Khoa').DataType := ftWideString;
+        Query.ParamByName('Khoa').AsWideString := Trim(edtKhoa.Text);
+        Query.ParamByName('Nganh').DataType := ftWideString;
+        Query.ParamByName('Nganh').AsWideString := Trim(edtNganh.Text);
+        Query.ParamByName('MoTa').DataType := ftWideString;
+        Query.ParamByName('MoTa').AsWideString := Trim(memMoTa.Text);
         Query.ParamByName('SoLuong').AsInteger := StrToIntDef(Trim(edtSoLuong.Text), 0);
         Query.ParamByName('SoLuongCon').AsInteger := StrToIntDef(Trim(edtSoLuongCon.Text), 0);
       end
-      else // Chế độ Sửa
+      else
       begin
         SQL := 'UPDATE TaiLieuTongHop SET ' +
                'MaTaiLieu = :MaTaiLieu, TenTaiLieu = :TenTaiLieu, TenTacGia = :TenTacGia, NhaXB = :NhaXB, NamXB = :NamXB, ' +
                'LoaiTL = :LoaiTL, TenLoaiTL = :TenLoaiTL, Khoa = :Khoa, Nganh = :Nganh, MoTa = :MoTa, ' +
-               'SoLuongCon = :SoLuongCon, NgayCapNhat = GETDATE() ' +
+               'SoLuong = :SoLuong, SoLuongCon = :SoLuongCon, NgayCapNhat = GETDATE() ' +
                'WHERE ID = :ID';
         Query.SQL.Text := SQL;
-        Query.ParamByName('MaTaiLieu').AsString := Trim(edtMaTL.Text);
-        Query.ParamByName('TenTaiLieu').AsString := Trim(edtTenTL.Text);
-        Query.ParamByName('TenTacGia').AsString := Trim(edtTacGia.Text);
-        Query.ParamByName('NhaXB').AsString := Trim(edtNXB.Text);
+        Query.ParamByName('MaTaiLieu').DataType := ftWideString;
+        Query.ParamByName('MaTaiLieu').AsWideString := Trim(edtMaTL.Text);
+        Query.ParamByName('TenTaiLieu').DataType := ftWideString;
+        Query.ParamByName('TenTaiLieu').AsWideString := Trim(edtTenTL.Text);
+        Query.ParamByName('TenTacGia').DataType := ftWideString;
+        Query.ParamByName('TenTacGia').AsWideString := Trim(edtTacGia.Text);
+        Query.ParamByName('NhaXB').DataType := ftWideString;
+        Query.ParamByName('NhaXB').AsWideString := Trim(edtNXB.Text);
         Query.ParamByName('NamXB').AsInteger := edtNamXB.Value;
-        Query.ParamByName('LoaiTL').AsString := cboLoaiTL.Text;
-        Query.ParamByName('TenLoaiTL').AsString := Trim(edtTenLoaiTL.Text);
-        Query.ParamByName('Khoa').AsString := Trim(edtKhoa.Text);
-        Query.ParamByName('Nganh').AsString := Trim(edtNganh.Text);
-        Query.ParamByName('MoTa').AsString := Trim(memMoTa.Text);
+        Query.ParamByName('LoaiTL').DataType := ftWideString;
+        Query.ParamByName('LoaiTL').AsWideString := cboLoaiTL.Text;
+        Query.ParamByName('TenLoaiTL').DataType := ftWideString;
+        Query.ParamByName('TenLoaiTL').AsWideString := Trim(edtTenLoaiTL.Text);
+        Query.ParamByName('Khoa').DataType := ftWideString;
+        Query.ParamByName('Khoa').AsWideString := Trim(edtKhoa.Text);
+        Query.ParamByName('Nganh').DataType := ftWideString;
+        Query.ParamByName('Nganh').AsWideString := Trim(edtNganh.Text);
+        Query.ParamByName('MoTa').DataType := ftWideString;
+        Query.ParamByName('MoTa').AsWideString := Trim(memMoTa.Text);
+        Query.ParamByName('SoLuong').AsInteger := StrToIntDef(Trim(edtSoLuong.Text), 0);
         Query.ParamByName('SoLuongCon').AsInteger := StrToIntDef(Trim(edtSoLuongCon.Text), 0);
         Query.ParamByName('ID').AsLargeInt := FTaiLieuIDCanSua;
       end;
 
       Query.ExecSQL;
-      ModalResult := mrOk; // Đóng form và báo thành công
+      ShowMessage('Lưu tài liệu thành công.');
+      ModalResult := mrOk; // Đóng form chỉ khi lưu thành công
     except
       on E: Exception do
         ShowMessage('Lỗi khi lưu tài liệu: ' + E.Message);
@@ -202,35 +257,35 @@ end;
 
 procedure TfrmThemSuaTaiLieu.FormCreate(Sender: TObject);
 begin
-  // Mặc định là chế độ Thêm
-  FCheDo := 'Them';
-  FTaiLieuIDCanSua := -1; // Giá trị không hợp lệ
-  edtSoLuong.ReadOnly := True; // Số lượng tổng thường không cho sửa trực tiếp
-  // Điền danh sách mã loại tài liệu
-  cboLoaiTL.Items.Add('SA');  // Sách
-  cboLoaiTL.Items.Add('TC');  // Tạp chí
-  cboLoaiTL.Items.Add('KL');  // Khóa luận
-  cboLoaiTL.Items.Add('LV');  // Luận văn
-  cboLoaiTL.Items.Add('GT');  // Giáo trình
-  cboLoaiTL.Items.Add('NV');  // Sách ngoại văn
-  cboLoaiTL.Items.Add('BG');  // Bài giảng
-  cboLoaiTL.Items.Add('BC');  // Báo cáo khoa học
-  cboLoaiTL.Items.Add('TD');  // Tư liệu
-  cboLoaiTL.Items.Add('LA');  // Luận án
-  cboLoaiTL.Items.Add('TK');  // Sách tham khảo
-  cboLoaiTL.Items.Add('CK');  // Sách chuyên khảo
-  cboLoaiTL.Items.Add('Kh');  // Tài liệu khác
+  cboLoaiTL.Items.Add('SA');
+  cboLoaiTL.Items.Add('TC');
+  cboLoaiTL.Items.Add('KL');
+  cboLoaiTL.Items.Add('LV');
+  cboLoaiTL.Items.Add('GT');
+  cboLoaiTL.Items.Add('NV');
+  cboLoaiTL.Items.Add('BG');
+  cboLoaiTL.Items.Add('BC');
+  cboLoaiTL.Items.Add('TD');
+  cboLoaiTL.Items.Add('LA');
+  cboLoaiTL.Items.Add('TK');
+  cboLoaiTL.Items.Add('CK');
+  cboLoaiTL.Items.Add('Kh');
 
-  if FCheDo = 'Them' then
-    edtMaTL.ReadOnly := True
-  else
-    edtMaTL.ReadOnly := False;
+  ResetForm;
 end;
 
+procedure TfrmThemSuaTaiLieu.FormShow(Sender: TObject);
+begin
+  if FCheDo = 'Sua' then
+    LoadDataForEdit
+  else
+    ResetForm;
+end;
 
 function TfrmThemSuaTaiLieu.ValidateInput: Boolean;
 begin
   Result := True;
+
   if Trim(edtMaTL.Text) = '' then
   begin
     ShowMessage('Vui lòng nhập Mã tài liệu.');
@@ -238,6 +293,7 @@ begin
     Result := False;
     Exit;
   end;
+
   if Trim(edtTenTL.Text) = '' then
   begin
     ShowMessage('Vui lòng nhập Tên tài liệu.');
@@ -245,38 +301,69 @@ begin
     Result := False;
     Exit;
   end;
-   if cboLoaiTL.ItemIndex < 0 then
+
+  if cboLoaiTL.ItemIndex < 0 then
   begin
     ShowMessage('Vui lòng chọn Loại tài liệu.');
     cboLoaiTL.SetFocus;
     Result := False;
     Exit;
   end;
-    if Trim(edtTacGia.Text) = '' then
+
+  if Trim(edtTacGia.Text) = '' then
   begin
     ShowMessage('Vui lòng nhập Tên tác giả.');
     edtTacGia.SetFocus;
     Result := False;
     Exit;
   end;
-     if Trim(edtNXB.Text) = '' then
+
+  if Trim(edtNXB.Text) = '' then
   begin
     ShowMessage('Vui lòng nhập Nhà xuất bản.');
     edtNXB.SetFocus;
     Result := False;
     Exit;
   end;
-       if Trim(edtSoLuong.Text) = '' then
+
+  if Trim(edtSoLuong.Text) = '' then
   begin
     ShowMessage('Vui lòng nhập Số lượng tổng.');
     edtSoLuong.SetFocus;
     Result := False;
     Exit;
   end;
-  If trim(edtSoLuongCon.text) = '' then
-  Begin
-    edtSoLuongCon.text := edtSoLuong.text;
-  End;
+
+  // Kiểm tra số lượng tổng phải là số hợp lệ
+  if (StrToIntDef(Trim(edtSoLuong.Text), -1) < 0) then
+  begin
+    ShowMessage('Số lượng tổng phải là một số không âm.');
+    edtSoLuong.SetFocus;
+    Result := False;
+    Exit;
+  end;
+
+  // Nếu không nhập số lượng còn, gán bằng số lượng tổng
+  if Trim(edtSoLuongCon.Text) = '' then
+  begin
+    edtSoLuongCon.Text := edtSoLuong.Text;
+  end
+  else if (StrToIntDef(Trim(edtSoLuongCon.Text), -1) < 0) then
+  begin
+    ShowMessage('Số lượng còn phải là một số không âm.');
+    edtSoLuongCon.SetFocus;
+    Result := False;
+    Exit;
+  end;
+
+  // Kiểm tra số lượng còn không được lớn hơn số lượng tổng
+  if StrToIntDef(Trim(edtSoLuongCon.Text), 0) > StrToIntDef(Trim(edtSoLuong.Text), 0) then
+  begin
+    ShowMessage('Số lượng còn không được lớn hơn số lượng tổng.');
+    edtSoLuongCon.SetFocus;
+    Result := False;
+    Exit;
+  end;
 end;
 
 function TfrmThemSuaTaiLieu.GenerateMaTaiLieu(LoaiTL: string): string;
@@ -288,12 +375,12 @@ begin
   try
     Query.Connection := DM_Admin.FDConnectionAdmin;
     Query.SQL.Text := 'SELECT COUNT(*) FROM TaiLieuTongHop WHERE LoaiTL = :LoaiTL';
-    Query.ParamByName('LoaiTL').AsString := LoaiTL;
+    Query.ParamByName('LoaiTL').AsWideString := LoaiTL;
     Query.Open;
     Count := Query.Fields[0].AsInteger;
     Query.Close;
-    Inc(Count); // Tăng số thứ tự lên 1
-    Result := LoaiTL + Format('%.6d', [Count]); // Định dạng số thứ tự thành 6 chữ số
+    Inc(Count);
+    Result := LoaiTL + Format('%.6d', [Count]);
   finally
     Query.Free;
   end;

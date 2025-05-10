@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Imaging.pngimage, Vcl.Buttons;
 
 type
   TfrmAdminLogin = class(TForm)
@@ -12,9 +13,12 @@ type
     edtTenDangNhap: TEdit;
     lblMatKhauAdmin: TLabel;
     edtMatKhauAdmin: TEdit;
-    btnAdminLogin: TButton;
-    btnAdminThoat: TButton;
+    btnAdminLogin: TBitBtn;
+    btnAdminThoat: TBitBtn;
     Label1: TLabel;
+    imgLogo: TImage;
+    pnlHeader: TPanel;
+    pnlMain: TPanel;
     procedure btnAdminThoatClick(Sender: TObject);
     procedure btnAdminLoginClick(Sender: TObject);
   private

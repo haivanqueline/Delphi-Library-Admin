@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.CheckLst, Vcl.ExtCtrls,
+  Vcl.Buttons;
 
 type
   TQuyenInfo = record
@@ -16,8 +17,9 @@ type
     lblThuThuDuocChonPQ: TLabel;
     clbQuyen: TCheckListBox;
     pnlPhanQuyenActions: TPanel;
-    btnLuuQuyen: TButton;
-    btnDongPQ: TButton;
+    btnLuuQuyen: TBitBtn;
+    btnDongPQ: TBitBtn;
+    pnlHeader: TPanel;
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure btnLuuQuyenClick(Sender: TObject);
@@ -43,7 +45,7 @@ uses UnitAdminDM, FireDAC.Comp.Client, Data.DB;
 
 procedure TfrmPhanQuyen.btnLuuQuyenClick(Sender: TObject);
 var
-  i: Integer;
+  i, Count: Integer;
   Query: TFDQuery;
   QuyenData: PQuyenInfo;
 begin
@@ -57,14 +59,37 @@ begin
       Query.ParamByName('ThuThuID').AsInteger := FThuThuIDCanPhanQuyen;
       Query.ExecSQL;
 
-      // 2. Chuẩn bị câu lệnh INSERT và sử dụng batch insert
+      // 2. Đếm số quyền được chọn
+      Count := 0;
+      for i := 0 to clbQuyen.Items.Count - 1 do
+      begin
+        if clbQuyen.Checked[i] then
+          Inc(Count);
+      end;
+
+      // 3. Nếu không có quyền nào được chọn, thoát
+      if Count = 0 then
+      begin
+        DM_Admin.FDConnectionAdmin.Commit;
+        ShowMessage('Không có quyền nào được chọn. Phân quyền không thay đổi.');
+        ModalResult := mrOk;
+        Exit;
+      end;
+
+      // 4. Chuẩn bị câu lệnh INSERT với batch insert
       Query.SQL.Text := 'INSERT INTO ThuThu_Quyen (ThuThuID, MaQuyen, TenQuyen) ' +
                         'VALUES (:ThuThuID, :MaQuyen, :TenQuyen)';
-      Query.Prepare;
 
-      // Tắt chế độ thực thi tự động để tích lũy các bản ghi
-      Query.UpdateOptions.AutoCommitUpdates := False;
+      // Khai báo kiểu dữ liệu và kích thước mảng cho các tham số
+      Query.ParamByName('ThuThuID').DataType := ftInteger;
+      Query.ParamByName('ThuThuID').ArraySize := Count; // Kích thước mảng bằng số quyền được chọn
+      Query.ParamByName('MaQuyen').DataType := ftWideString;
+      Query.ParamByName('MaQuyen').ArraySize := Count;
+      Query.ParamByName('TenQuyen').DataType := ftWideString;
+      Query.ParamByName('TenQuyen').ArraySize := Count;
 
+      // 5. Gán giá trị cho các tham số dưới dạng mảng
+      Count := 0; // Reset Count để dùng làm chỉ số mảng
       for i := 0 to clbQuyen.Items.Count - 1 do
       begin
         if clbQuyen.Checked[i] then
@@ -72,16 +97,16 @@ begin
           QuyenData := PQuyenInfo(clbQuyen.Items.Objects[i]);
           if Assigned(QuyenData) then
           begin
-            Query.ParamByName('ThuThuID').AsInteger := FThuThuIDCanPhanQuyen;
-            Query.ParamByName('MaQuyen').AsString := QuyenData^.MaQuyen;
-            Query.ParamByName('TenQuyen').AsString := QuyenData^.TenQuyen;
-            Query.Execute; // Tích lũy bản ghi
+            Query.ParamByName('ThuThuID').AsIntegers[Count] := FThuThuIDCanPhanQuyen;
+            Query.ParamByName('MaQuyen').AsWideStrings[Count] := QuyenData^.MaQuyen;
+            Query.ParamByName('TenQuyen').AsWideStrings[Count] := QuyenData^.TenQuyen;
+            Inc(Count);
           end;
         end;
       end;
 
-      // Gửi tất cả các bản ghi trong một lần
-      Query.Execute(clbQuyen.Items.Count, 0);
+      // 6. Thực thi batch insert
+      Query.Execute(Count, 0);
 
       DM_Admin.FDConnectionAdmin.Commit;
       ShowMessage('Lưu phân quyền thành công!');
@@ -127,7 +152,6 @@ begin
   New(QuyenData); QuyenData^.MaQuyen := 'QLSACH_SUA'; QuyenData^.TenQuyen := 'Sửa sách/tài liệu'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
   New(QuyenData); QuyenData^.MaQuyen := 'QLSACH_XOA'; QuyenData^.TenQuyen := 'Xóa sách/tài liệu'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
   New(QuyenData); QuyenData^.MaQuyen := 'MUONTRA_MUON'; QuyenData^.TenQuyen := 'Xử lý mượn sách'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
-  //New(QuyenData); QuyenData^.MaQuyen := 'MUONTRA_XACNHANMUON'; QuyenData^.TenQuyen := 'Xác nhận đã mượn'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
   New(QuyenData); QuyenData^.MaQuyen := 'MUONTRA_TRA'; QuyenData^.TenQuyen := 'Xử lý trả sách'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
   New(QuyenData); QuyenData^.MaQuyen := 'QL_SINHVIEN'; QuyenData^.TenQuyen := 'Quản lý sinh viên'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
   New(QuyenData); QuyenData^.MaQuyen := 'BC_THONGKE'; QuyenData^.TenQuyen := 'Xem báo cáo'; clbQuyen.Items.AddObject(QuyenData^.TenQuyen, TObject(QuyenData));
