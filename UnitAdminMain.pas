@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
   Data.DB, Vcl.Buttons, Vcl.DBCtrls, Vcl.Grids, Vcl.DBGrids ,System.DateUtils,
-  Vcl.Mask;
+  Vcl.Mask, System.Math;
 
 type
   TfrmAdminMain = class(TForm)
@@ -40,7 +40,7 @@ type
     edtDuyetTra_LyDo: TEdit;
     pnlQLTL_Actions: TPanel;
     lblQLTL_TimKiem: TLabel;
-    edtQLTL_TuKhoa: TEdit;
+    edtQLTL_TenTaiLieu: TEdit;
     btnQLTL_TimKiem: TBitBtn;
     btnQLTL_Them: TBitBtn;
     btnQLTL_Sua: TBitBtn;
@@ -84,6 +84,12 @@ type
     edtQuaHan_TienPhatMatSach: TLabeledEdit;
     tsLichSuHoatDong: TTabSheet;
     lstvLichSuHoatDong: TListView;
+    edtQLTL_TenTacGia: TEdit;
+    edtQLTL_NhaXB: TEdit;
+    edtQLTL_MoTa: TEdit;
+    Panel2: TPanel;
+    lblCurrentTienPhatMoiNgay: TLabel;
+    lblCurrentTienPhatMatSach: TLabel;
     procedure FormActivate(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure btnAdminDangXuatClick(Sender: TObject);
@@ -119,6 +125,7 @@ type
     FAdmin_HoTen: string;
     FAdmin_VaiTro: Integer;
     FAdmin_TenVaiTro: string;
+    function RemoveDiacritics(const Input: string): string;
     procedure HienThiYeuCauDuyetMuon;
     procedure HienThiYeuCauXacNhanMuon;
     procedure HienThiThongKeSinhVien;
@@ -146,7 +153,33 @@ Uses uAdminLogin, uAdminDoiMK, UnitAdminDM, uThemSuaTaiLieu, uThemSuaThuThu, uPh
   FireDAC.Stan.Option, FireDAC.Phys, uSessionManager, uPasswordUtils, System.NetEncoding;
 
 
-
+function TfrmAdminMain.RemoveDiacritics(const Input: string): string;
+var
+  i: Integer;
+  Temp: string;
+begin
+  Temp := Input;
+  for i := 1 to Length(Temp) do
+  begin
+    case Temp[i] of
+      'á', 'à', 'ả', 'ã', 'ạ': Temp[i] := 'a';
+      'Á', 'À', 'Ả', 'Ã', 'Ạ': Temp[i] := 'A';
+      'é', 'è', 'ẻ', 'ẽ', 'ẹ': Temp[i] := 'e';
+      'É', 'È', 'Ẻ', 'Ẽ', 'Ẹ': Temp[i] := 'E';
+      'í', 'ì', 'ỉ', 'ĩ', 'ị': Temp[i] := 'i';
+      'Í', 'Ì', 'Ỉ', 'Ĩ', 'Ị': Temp[i] := 'I';
+      'ó', 'ò', 'ỏ', 'õ', 'ọ': Temp[i] := 'o';
+      'Ó', 'Ò', 'Ỏ', 'Õ', 'Ọ': Temp[i] := 'O';
+      'ú', 'ù', 'ủ', 'ũ', 'ụ': Temp[i] := 'u';
+      'Ú', 'Ù', 'Ủ', 'Ũ', 'Ụ': Temp[i] := 'U';
+      'ý', 'ỳ', 'ỷ', 'ỹ', 'ỵ': Temp[i] := 'y';
+      'Ý', 'Ỳ', 'Ỷ', 'Ỹ', 'Ỵ': Temp[i] := 'Y';
+      'đ': Temp[i] := 'd';
+      'Đ': Temp[i] := 'D';
+    end;
+  end;
+  Result := Temp;
+end;
 
 procedure TfrmAdminMain.HienThiLichSuHoatDong;
 var
@@ -227,8 +260,9 @@ var
   STT: Integer;
   ListItem: TListItem;
   MuonTraID: Int64;
+  Query: TFDQuery;
 begin
-  lstvQuaHan.Items.Clear; // Dùng đúng tên ListView của bạn
+  lstvQuaHan.Items.Clear;
   if DM_Admin.FDQuery_QuaHan.Active then
   begin
     DM_Admin.FDQuery_QuaHan.First;
@@ -242,7 +276,7 @@ begin
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('MaYeuCau').AsString);
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('MSSV').AsString);
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('TenSinhVien').AsString);
-      ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('MaTaiLieu').AsString); // Đảm bảo View có
+      ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('MaTaiLieu').AsString);
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('TenTaiLieu').AsString);
       ListItem.SubItems.Add(FormatDateTime('dd/mm/yyyy', DM_Admin.FDQuery_QuaHan.FieldByName('NgayHenTra').AsDateTime));
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('SoNgayTre').AsString);
@@ -250,6 +284,28 @@ begin
       ListItem.SubItems.Add(DM_Admin.FDQuery_QuaHan.FieldByName('TenTrangThai').AsString);
       Inc(STT);
       DM_Admin.FDQuery_QuaHan.Next;
+    end;
+
+    // Hiển thị mức phạt hiện tại
+    Query := TFDQuery.Create(nil);
+    try
+      Query.Connection := DM_Admin.FDConnectionAdmin;
+      Query.SQL.Text := 'SELECT MAX(CASE WHEN TrangThai = 8 THEN TienPhat / NULLIF(SoNgayTre, 0) ELSE 0 END) AS TienPhatMoiNgay, ' +
+                        'MAX(CASE WHEN TrangThai = 9 THEN TienPhat ELSE 0 END) AS TienPhatMatSach ' +
+                        'FROM v_ChiTietMuonTraTaiLieu WHERE TrangThai IN (8, 9)';
+      Query.Open;
+      if not Query.IsEmpty then
+      begin
+        lblCurrentTienPhatMoiNgay.Caption := Format('Mức phạt hiện tại: %s VND/ngày', [FormatFloat('#,##0', Query.FieldByName('TienPhatMoiNgay').AsFloat)]);
+        lblCurrentTienPhatMatSach.Caption := Format('Mức phạt mất sách: %s VND', [FormatFloat('#,##0', Query.FieldByName('TienPhatMatSach').AsFloat)]);
+      end
+      else
+      begin
+        lblCurrentTienPhatMoiNgay.Caption := 'Mức phạt hiện tại: Chưa có dữ liệu';
+        lblCurrentTienPhatMatSach.Caption := 'Mức phạt mất sách: Chưa có dữ liệu';
+      end;
+    finally
+      Query.Free;
     end;
   end;
 end;
@@ -1088,26 +1144,102 @@ end;
 
 procedure TfrmAdminMain.btnQLTL_TimKiemClick(Sender: TObject);
 var
-  TuKhoa: string;
   SQL: string;
+  TenTaiLieu, TenTacGia, NhaXB, MoTa: string;
+  HasCondition: Boolean;
+  ChiTiet: string;
 begin
-  TuKhoa := Trim(edtQLTL_TuKhoa.Text);
-  SQL := 'SELECT * FROM TaiLieuTongHop';
-  if TuKhoa <> '' then
-  begin
-    SQL := SQL + ' WHERE MaTaiLieu LIKE :TuKhoa OR TenTaiLieu LIKE :TuKhoa OR TenTacGia LIKE :TuKhoa OR NhaXB LIKE :TuKhoa OR MoTa LIKE :TuKhoa';
-  end;
-  SQL := SQL + ' ORDER BY TenTaiLieu'; // Sắp xếp theo tên
+  // Lấy giá trị từ các ô nhập liệu
+  TenTaiLieu := Trim(edtQLTL_TenTaiLieu.Text);
+  TenTacGia := Trim(edtQLTL_TenTacGia.Text);
+  NhaXB := Trim(edtQLTL_NhaXB.Text);
+  MoTa := Trim(edtQLTL_MoTa.Text);
 
-  DM_Admin.FDQuery_QLTL.Close;
-  DM_Admin.FDQuery_QLTL.SQL.Text := SQL;
-  DM_Admin.FDQuery_QLTL.Params.Clear;
-  if TuKhoa <> '' then
+  // Chuẩn hóa từ khóa (bỏ dấu)
+  if TenTaiLieu <> '' then TenTaiLieu := RemoveDiacritics(TenTaiLieu);
+  if TenTacGia <> '' then TenTacGia := RemoveDiacritics(TenTacGia);
+  if NhaXB <> '' then NhaXB := RemoveDiacritics(NhaXB);
+  if MoTa <> '' then MoTa := RemoveDiacritics(MoTa);
+
+  // Xây dựng truy vấn cơ bản
+  SQL := 'SELECT * FROM TaiLieuTongHop';
+  HasCondition := False;
+
+  // Thêm điều kiện tìm kiếm
+  if TenTaiLieu <> '' then
   begin
-    DM_Admin.FDQuery_QLTL.Params.CreateParam(ftString, 'TuKhoa', ptInput);
-    DM_Admin.FDQuery_QLTL.ParamByName('TuKhoa').AsString := '%' + TuKhoa + '%';
+    SQL := SQL + ' WHERE dbo.RemoveDiacritics(TenTaiLieu) LIKE :TenTaiLieu';
+    HasCondition := True;
   end;
-  DM_Admin.FDQuery_QLTL.Open;
+  if TenTacGia <> '' then
+  begin
+    if HasCondition then
+      SQL := SQL + ' AND '
+    else
+      SQL := SQL + ' WHERE ';
+    SQL := SQL + 'dbo.RemoveDiacritics(TenTacGia) LIKE :TenTacGia';
+    HasCondition := True;
+  end;
+  if NhaXB <> '' then
+  begin
+    if HasCondition then
+      SQL := SQL + ' AND '
+    else
+      SQL := SQL + ' WHERE ';
+    SQL := SQL + 'dbo.RemoveDiacritics(NhaXB) LIKE :NhaXB';
+    HasCondition := True;
+  end;
+  if MoTa <> '' then
+  begin
+    if HasCondition then
+      SQL := SQL + ' AND '
+    else
+      SQL := SQL + ' WHERE ';
+    SQL := SQL + 'dbo.RemoveDiacritics(MoTa) LIKE :MoTa';
+    HasCondition := True;
+  end;
+
+  // Sắp xếp kết quả
+  SQL := SQL + ' ORDER BY TenTaiLieu';
+
+  // Thiết lập truy vấn
+  try
+    DM_Admin.FDQuery_QLTL.Close;
+    DM_Admin.FDQuery_QLTL.SQL.Text := SQL;
+    DM_Admin.FDQuery_QLTL.Params.Clear;
+
+    // Gán tham số
+    if TenTaiLieu <> '' then
+    begin
+      DM_Admin.FDQuery_QLTL.Params.CreateParam(ftString, 'TenTaiLieu', ptInput);
+      DM_Admin.FDQuery_QLTL.ParamByName('TenTaiLieu').AsString := '%' + TenTaiLieu + '%';
+    end;
+    if TenTacGia <> '' then
+    begin
+      DM_Admin.FDQuery_QLTL.Params.CreateParam(ftString, 'TenTacGia', ptInput);
+      DM_Admin.FDQuery_QLTL.ParamByName('TenTacGia').AsString := '%' + TenTacGia + '%';
+    end;
+    if NhaXB <> '' then
+    begin
+      DM_Admin.FDQuery_QLTL.Params.CreateParam(ftString, 'NhaXB', ptInput);
+      DM_Admin.FDQuery_QLTL.ParamByName('NhaXB').AsString := '%' + NhaXB + '%';
+    end;
+    if MoTa <> '' then
+    begin
+      DM_Admin.FDQuery_QLTL.Params.CreateParam(ftString, 'MoTa', ptInput);
+      DM_Admin.FDQuery_QLTL.ParamByName('MoTa').AsString := '%' + MoTa + '%';
+    end;
+
+    // Thực thi truy vấn
+    DM_Admin.FDQuery_QLTL.Open;
+
+    // Ghi lịch sử hoạt động
+  except
+    on E: Exception do
+    begin
+      ShowMessage('Lỗi khi tìm kiếm: ' + E.Message);
+    end;
+  end;
 end;
 
 procedure TfrmAdminMain.btnQLTL_XoaClick(Sender: TObject);
@@ -1393,12 +1525,18 @@ var
   TienPhatMatSach: Currency;
   SoBanGhiCapNhat: Integer;
   ChiTiet: string;
+  i: Integer;
+  SelectedItem: TListItem;
+  SelectedID: Int64;
+  Query: TFDQuery;
+  XacNhanMsg: string; // Biến tạm để lưu thông điệp xác nhận
 begin
   if not SessionManager.HasPermission('MUONTRA_TRA') then
   begin
     ShowMessage('Bạn không có quyền!');
     Exit;
   end;
+
   // Lấy giá trị từ TLabeledEdit
   TienPhatQuaHanMoiNgay := StrToFloatDef(Trim(edtQuaHan_TienPhatMoiNgay.Text), 0);
   TienPhatMatSach := StrToFloatDef(Trim(edtQuaHan_TienPhatMatSach.Text), 0);
@@ -1418,37 +1556,108 @@ begin
     Exit;
   end;
 
-  // Hỏi người dùng có muốn cập nhật tiền phạt không
-  if MessageDlg('Bạn có muốn cập nhật tiền phạt cho tất cả các yêu cầu quá hạn và mất sách?' + #13 +
-                Format('Mức phạt quá hạn: %s VND/ngày, áp dụng cho yêu cầu trễ từ 1 ngày trở lên.' + #13 +
-                       'Mức phạt mất sách: %s VND.',
+  // Xây dựng thông điệp xác nhận
+  XacNhanMsg := 'Cập nhật tiền phạt với:' + #13 +
+                Format('Mức phạt quá hạn: %s VND/ngày' + #13 +
+                       'Mức phạt mất sách: %s VND' + #13,
                        [FormatFloat('#,##0', TienPhatQuaHanMoiNgay),
-                        FormatFloat('#,##0', TienPhatMatSach)]),
-                mtConfirmation, [mbYes, mbNo], 0) = mrYes then
-  begin
+                        FormatFloat('#,##0', TienPhatMatSach)]);
+  if lstvQuaHan.SelCount > 0 then
+    XacNhanMsg := XacNhanMsg + Format('Cho %d yêu cầu được chọn.', [lstvQuaHan.SelCount])
+  else
+    XacNhanMsg := XacNhanMsg + 'Cho tất cả yêu cầu quá hạn.';
+
+  // Xác nhận hành động
+  if MessageDlg(XacNhanMsg, mtConfirmation, [mbYes, mbNo], 0) = mrNo then
+    Exit;
+
+  SoBanGhiCapNhat := 0;
+  Query := TFDQuery.Create(nil);
+  try
+    Query.Connection := DM_Admin.FDConnectionAdmin;
+    Query.SQL.Text := 'UPDATE v_ChiTietMuonTraTaiLieu ' +
+                      'SET TienPhat = CASE ' +
+                      '  WHEN TrangThai = 8 THEN SoNgayTre * :TienPhatMoiNgay ' +
+                      '  WHEN TrangThai = 9 THEN :TienPhatMatSach ' +
+                      '  ELSE TienPhat ' +
+                      'END, ' +
+                      'LyDoPhat = CASE ' +
+                      '  WHEN TrangThai = 8 THEN N''Phạt quá hạn'' ' +
+                      '  WHEN TrangThai = 9 THEN N''Phạt mất sách'' ' +
+                      '  ELSE LyDoPhat ' +
+                      'END, ' +
+                      'GhiChu = ISNULL(GhiChu + NCHAR(13)+NCHAR(10), N'''') + ' +
+                      'N''Đã cập nhật tiền phạt vào '' + CONVERT(NVARCHAR(10), GETDATE(), 103) ' +
+                      'WHERE ID = :ID';
+    Query.Params.CreateParam(ftLargeInt, 'ID', ptInput);
+    Query.Params.CreateParam(ftCurrency, 'TienPhatMoiNgay', ptInput);
+    Query.Params.CreateParam(ftCurrency, 'TienPhatMatSach', ptInput);
+
+    DM_Admin.FDConnectionAdmin.StartTransaction;
     try
-      // Gọi hàm TinhVaCapNhatTienPhat
-      SoBanGhiCapNhat := DM_Admin.TinhVaCapNhatTienPhat(1, TienPhatQuaHanMoiNgay, TienPhatMatSach);
+      if lstvQuaHan.SelCount > 0 then
+      begin
+        // Cập nhật chỉ cho các mục được chọn
+        for i := 0 to lstvQuaHan.Items.Count - 1 do
+        begin
+          SelectedItem := lstvQuaHan.Items[i];
+          if SelectedItem.Selected then
+          begin
+            SelectedID := Int64(SelectedItem.Data);
+            Query.ParamByName('ID').AsLargeInt := SelectedID;
+            Query.ParamByName('TienPhatMoiNgay').AsCurrency := TienPhatQuaHanMoiNgay;
+            Query.ParamByName('TienPhatMatSach').AsCurrency := TienPhatMatSach;
+            Query.ExecSQL;
+            Inc(SoBanGhiCapNhat);
+          end;
+        end;
+      end
+      else
+      begin
+        // Cập nhật cho tất cả các yêu cầu quá hạn
+        Query.SQL.Text := 'UPDATE v_ChiTietMuonTraTaiLieu ' +
+                          'SET TienPhat = CASE ' +
+                          '  WHEN TrangThai = 8 THEN SoNgayTre * :TienPhatMoiNgay ' +
+                          '  WHEN TrangThai = 9 THEN :TienPhatMatSach ' +
+                          '  ELSE TienPhat ' +
+                          'END, ' +
+                          'LyDoPhat = CASE ' +
+                          '  WHEN TrangThai = 8 THEN N''Phạt quá hạn'' ' +
+                          '  WHEN TrangThai = 9 THEN N''Phạt mất sách'' ' +
+                          '  ELSE LyDoPhat ' +
+                          'END, ' +
+                          'GhiChu = ISNULL(GhiChu + NCHAR(13)+NCHAR(10), N'''') + ' +
+                          'N''Đã cập nhật tiền phạt vào '' + CONVERT(NVARCHAR(10), GETDATE(), 103) ' +
+                          'WHERE TrangThai IN (8, 9)';
+        Query.Params.Clear;
+        Query.Params.CreateParam(ftCurrency, 'TienPhatMoiNgay', ptInput);
+        Query.Params.CreateParam(ftCurrency, 'TienPhatMatSach', ptInput);
+        Query.ParamByName('TienPhatMoiNgay').AsCurrency := TienPhatQuaHanMoiNgay;
+        Query.ParamByName('TienPhatMatSach').AsCurrency := TienPhatMatSach;
+        Query.ExecSQL;
+        SoBanGhiCapNhat := Query.RowsAffected;
+      end;
+
+      DM_Admin.FDConnectionAdmin.Commit;
       ChiTiet := Format('Cập nhật tiền phạt: %s VND/ngày, %s VND/mất sách, ảnh hưởng %d yêu cầu.',
                         [FormatFloat('#,##0', TienPhatQuaHanMoiNgay),
                          FormatFloat('#,##0', TienPhatMatSach),
                          SoBanGhiCapNhat]);
       GhiLichSuHoatDong('Cập nhật tiền phạt', ChiTiet);
-      if SoBanGhiCapNhat > 0 then
-        ShowMessage(Format('Đã cập nhật tiền phạt cho %d yêu cầu quá hạn hoặc mất sách.', [SoBanGhiCapNhat]))
-      else
-        ShowMessage('Không có yêu cầu quá hạn hoặc mất sách nào cần tính tiền phạt.');
 
-      // Refresh danh sách quá hạn để thấy tiền phạt mới
-      HienThiDuLieuQuaHan;
+      ShowMessage(Format('Đã cập nhật tiền phạt cho %d yêu cầu quá hạn hoặc mất sách.', [SoBanGhiCapNhat]));
+      HienThiDuLieuQuaHan; // Refresh danh sách
     except
       on E: Exception do
       begin
+        DM_Admin.FDConnectionAdmin.Rollback;
         ChiTiet := 'Lỗi khi cập nhật tiền phạt: ' + E.Message;
         GhiLichSuHoatDong('Cập nhật tiền phạt', ChiTiet);
         ShowMessage('Lỗi khi cập nhật tiền phạt: ' + E.Message);
       end;
     end;
+  finally
+    Query.Free;
   end;
 end;
 
@@ -2011,10 +2220,7 @@ begin
     if SoBanGhiCapNhat > 0 then
       ShowMessage(Format('Hệ thống đã tự động hủy %d yêu cầu mượn do không đến nhận tài liệu đúng hạn.', [SoBanGhiCapNhat]));
 
-    SoBanGhiCapNhat := DM_Admin.TinhVaCapNhatTienPhat(1, 5000, 100000);
-      if SoBanGhiCapNhat > 0 then
-        ShowMessage(Format('Đã cập nhật tiền phạt cho %d yêu cầu quá hạn hoặc mất sách.', [SoBanGhiCapNhat]))
-    except
+      except
     on E: Exception do
     Begin
       ShowMessage('Lỗi khi cập nhật trạng thái quá hạn: ' + E.Message);

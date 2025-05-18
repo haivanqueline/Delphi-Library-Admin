@@ -16,9 +16,6 @@ Coordinates=10,498,95,58
 [btnAdminDangXuat]
 Coordinates=535,634,126,58
 
-[edtQLTL_TuKhoa]
-Coordinates=628,498,116,58
-
 [cboTK_LoaiThongKe]
 Coordinates=533,10,135,124
 
@@ -241,4 +238,7 @@ Coordinates=678,10,158,58
 
 []
 Coordinates=1549,634,135,58
+
+[edtQLTL_TenTaiLieu]
+Coordinates=628,498,116,58
 

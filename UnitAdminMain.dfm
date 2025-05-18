@@ -565,16 +565,16 @@ object frmAdminMain: TfrmAdminMain
             Width = 40
           end
           item
+            AutoSize = True
             Caption = 'M'#227' M'#432#7907'n Tr'#7843
-            Width = 120
           end
           item
             Caption = 'MSSV'
             Width = 100
           end
           item
+            AutoSize = True
             Caption = 'T'#234'n Sinh Vi'#234'n'
-            Width = 200
           end
           item
             Caption = 'M'#227' T'#224'i Li'#7879'u'
@@ -582,7 +582,7 @@ object frmAdminMain: TfrmAdminMain
           end
           item
             Caption = 'T'#234'n T'#224'i Li'#7879'u'
-            Width = 250
+            Width = 225
           end
           item
             Caption = 'Ng'#224'y H'#7865'n Tr'#7843
@@ -624,10 +624,12 @@ object frmAdminMain: TfrmAdminMain
         BevelOuter = bvNone
         ParentBackground = False
         TabOrder = 1
+        ExplicitTop = 447
+        ExplicitWidth = 1081
         object btnQuaHan_GuiThongBao: TBitBtn
-          Left = 14
-          Top = 6
-          Width = 200
+          Left = 6
+          Top = 10
+          Width = 180
           Height = 40
           Caption = 'G'#7917'i Th'#244'ng B'#225'o Nh'#7855'c Nh'#7903
           Font.Charset = DEFAULT_CHARSET
@@ -640,7 +642,7 @@ object frmAdminMain: TfrmAdminMain
           OnClick = btnQuaHan_GuiThongBaoClick
         end
         object btnQuaHan_XemChiTiet: TBitBtn
-          Left = 220
+          Left = 189
           Top = 10
           Width = 180
           Height = 40
@@ -655,7 +657,7 @@ object frmAdminMain: TfrmAdminMain
           OnClick = btnQuaHan_XemChiTietClick
         end
         object btnQuaHan_XacNhanTra: TBitBtn
-          Left = 410
+          Left = 372
           Top = 10
           Width = 180
           Height = 40
@@ -672,7 +674,7 @@ object frmAdminMain: TfrmAdminMain
           OnClick = btnQuaHan_XacNhanTraClick
         end
         object btnQuaHan_CapNhatPhat: TBitBtn
-          Left = 897
+          Left = 1081
           Top = 10
           Width = 180
           Height = 40
@@ -687,29 +689,29 @@ object frmAdminMain: TfrmAdminMain
           OnClick = btnQuaHan_CapNhatPhatClick
         end
         object Panel1: TPanel
-          Left = 600
-          Top = 10
-          Width = 287
-          Height = 40
+          Left = 760
+          Top = 6
+          Width = 318
+          Height = 60
           BevelOuter = bvNone
           TabOrder = 4
           object edtQuaHan_TienPhatMoiNgay: TLabeledEdit
-            Left = -1
-            Top = 16
+            Left = 18
+            Top = 17
             Width = 140
-            Height = 25
-            EditLabel.Width = 117
-            EditLabel.Height = 12
+            Height = 29
+            EditLabel.Width = 140
+            EditLabel.Height = 15
             EditLabel.Caption = 'Ti'#7873'n ph'#7841't m'#7895'i ng'#224'y (VND):'
             EditLabel.Font.Charset = DEFAULT_CHARSET
             EditLabel.Font.Color = clWindowText
-            EditLabel.Font.Height = -10
+            EditLabel.Font.Height = -12
             EditLabel.Font.Name = 'Segoe UI'
             EditLabel.Font.Style = []
             EditLabel.ParentFont = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
-            Font.Height = -13
+            Font.Height = -16
             Font.Name = 'Segoe UI'
             Font.Style = []
             ParentFont = False
@@ -717,27 +719,66 @@ object frmAdminMain: TfrmAdminMain
             Text = ''
           end
           object edtQuaHan_TienPhatMatSach: TLabeledEdit
-            Left = 145
-            Top = 16
+            Left = 162
+            Top = 17
             Width = 140
-            Height = 25
-            EditLabel.Width = 115
-            EditLabel.Height = 12
+            Height = 29
+            EditLabel.Width = 138
+            EditLabel.Height = 15
             EditLabel.Caption = 'Ti'#7873'n ph'#7841't m'#7845't s'#225'ch (VND):'
             EditLabel.Font.Charset = DEFAULT_CHARSET
             EditLabel.Font.Color = clWindowText
-            EditLabel.Font.Height = -10
+            EditLabel.Font.Height = -12
             EditLabel.Font.Name = 'Segoe UI'
             EditLabel.Font.Style = []
             EditLabel.ParentFont = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clWindowText
-            Font.Height = -13
+            Font.Height = -16
             Font.Name = 'Segoe UI'
             Font.Style = []
             ParentFont = False
             TabOrder = 1
             Text = ''
+          end
+        end
+        object Panel2: TPanel
+          Left = 560
+          Top = 12
+          Width = 212
+          Height = 40
+          BevelOuter = bvNone
+          TabOrder = 5
+          object lblCurrentTienPhatMoiNgay: TLabel
+            Left = 0
+            Top = 0
+            Width = 212
+            Height = 15
+            Align = alTop
+            Caption = 'Label2'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Segoe UI'
+            Font.Style = []
+            ParentFont = False
+            ExplicitWidth = 34
+          end
+          object lblCurrentTienPhatMatSach: TLabel
+            Left = 0
+            Top = 15
+            Width = 212
+            Height = 15
+            Align = alTop
+            Caption = 'Label2'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Segoe UI'
+            Font.Style = []
+            ParentFont = False
+            ExplicitTop = 20
+            ExplicitWidth = 34
           end
         end
       end
@@ -756,7 +797,7 @@ object frmAdminMain: TfrmAdminMain
         TabOrder = 0
         object lblQLTL_TimKiem: TLabel
           Left = 10
-          Top = 15
+          Top = 13
           Width = 29
           Height = 21
           Caption = 'T'#236'm:'
@@ -767,10 +808,10 @@ object frmAdminMain: TfrmAdminMain
           Font.Style = []
           ParentFont = False
         end
-        object edtQLTL_TuKhoa: TEdit
-          Left = 50
-          Top = 10
-          Width = 500
+        object edtQLTL_TenTaiLieu: TEdit
+          Left = 45
+          Top = 0
+          Width = 250
           Height = 25
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -779,10 +820,10 @@ object frmAdminMain: TfrmAdminMain
           Font.Style = []
           ParentFont = False
           TabOrder = 0
-          TextHint = 'M'#227', t'#234'n, t'#225'c gi'#7843'...'
+          TextHint = 'T'#236'm theo t'#234'n t'#224'i li'#7879'u'
         end
         object btnQLTL_TimKiem: TBitBtn
-          Left = 560
+          Left = 559
           Top = 10
           Width = 100
           Height = 28
@@ -843,6 +884,48 @@ object frmAdminMain: TfrmAdminMain
           ParentFont = False
           TabOrder = 4
           OnClick = btnQLTL_XoaClick
+        end
+        object edtQLTL_TenTacGia: TEdit
+          Left = 45
+          Top = 25
+          Width = 250
+          Height = 25
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 5
+          TextHint = 'T'#236'm theo t'#234'n t'#225'c gi'#7843
+        end
+        object edtQLTL_NhaXB: TEdit
+          Left = 301
+          Top = 0
+          Width = 250
+          Height = 25
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 6
+          TextHint = 'T'#236'm theo nh'#224' xu'#7845't b'#7843'n'
+        end
+        object edtQLTL_MoTa: TEdit
+          Left = 301
+          Top = 25
+          Width = 250
+          Height = 25
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 7
+          TextHint = 'T'#236'm theo m'#244' t'#7843
         end
       end
       object dbgQLTL_DanhSach: TDBGrid

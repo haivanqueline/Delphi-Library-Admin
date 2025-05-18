@@ -62,109 +62,60 @@ uses System.DateUtils;
 
 function TDM_Admin.TinhVaCapNhatTienPhat(SoNgayTreToiThieu: Integer = 1; TienPhatQuaHanMoiNgay: Currency = 5000; TienPhatMatSach: Currency = 100000): Integer;
 var
-  MuonTraID: Int64;
-  NgayHenTraValue: TDate;
-  TrangThai: Integer;
-  SoNgayTreThucTe: Integer;
-  TienPhatMoi: Currency;
-  LyDoPhatMoi, GhiChuPhatMoi: string;
-  Today: TDate;
-  SoBanGhiCapNhat: Integer;
+  Query: TFDQuery;
 begin
-  Result := 0; // Số bản ghi được cập nhật
-  SoBanGhiCapNhat := 0;
+  Result := 0;
 
-  // Đảm bảo các query tồn tại và đã được kết nối
-  if (FDQuery_TinhPhatCanXuLy = nil) or (FDQuery_UpdateTienPhat = nil) or
-     (not FDConnectionAdmin.Connected) then
-  begin
-    raise Exception.Create('Lỗi: Query tính phạt chưa sẵn sàng hoặc chưa kết nối CSDL.');
-  end;
+  // Kiểm tra giá trị tham số
+  if TienPhatQuaHanMoiNgay <= 0 then
+    raise Exception.Create('Tiền phạt quá hạn mỗi ngày phải lớn hơn 0.');
+  if TienPhatMatSach <= 0 then
+    raise Exception.Create('Tiền phạt mất sách phải lớn hơn 0.');
+  if SoNgayTreToiThieu < 0 then
+    raise Exception.Create('Số ngày trễ tối thiểu không thể âm.');
 
-  Today := Date;
+  // Đảm bảo kết nối và query sẵn sàng
+  if not FDConnectionAdmin.Connected then
+    raise Exception.Create('Lỗi: Chưa kết nối đến cơ sở dữ liệu.');
 
-  // Sử dụng FDQuery_TinhPhatCanXuLy đã được cấu hình sẵn trong .dfm
-  FDQuery_TinhPhatCanXuLy.Close;
-  FDQuery_TinhPhatCanXuLy.Open;
-
-  if FDQuery_TinhPhatCanXuLy.IsEmpty then
-  begin
-    Exit; // Không có gì để làm, trả về 0
-  end;
-
-  // Bắt đầu transaction để đảm bảo cập nhật đồng bộ
-  FDConnectionAdmin.StartTransaction;
+  Query := TFDQuery.Create(nil);
   try
-    // Đảm bảo tham số cho query UPDATE tồn tại
-    if FDQuery_UpdateTienPhat.Params.FindParam('TienPhatMoi') = nil then
-      FDQuery_UpdateTienPhat.Params.CreateParam(ftCurrency, 'TienPhatMoi', ptInput);
-    if FDQuery_UpdateTienPhat.Params.FindParam('LyDoPhatMoi') = nil then
-      FDQuery_UpdateTienPhat.Params.CreateParam(ftString, 'LyDoPhatMoi', ptInput);
-    if FDQuery_UpdateTienPhat.Params.FindParam('GhiChuPhatMoi') = nil then
-      FDQuery_UpdateTienPhat.Params.CreateParam(ftString, 'GhiChuPhatMoi', ptInput);
-    if FDQuery_UpdateTienPhat.Params.FindParam('ID') = nil then
-      FDQuery_UpdateTienPhat.Params.CreateParam(ftLargeint, 'ID', ptInput);
+    Query.Connection := FDConnectionAdmin;
+    Query.SQL.Text := 'UPDATE v_ChiTietMuonTraTaiLieu ' +
+                      'SET TienPhat = CASE ' +
+                      '  WHEN TrangThai = 8 AND SoNgayTre >= :SoNgayTre THEN SoNgayTre * :TienPhatMoiNgay ' +
+                      '  WHEN TrangThai = 9 THEN :TienPhatMatSach ' +
+                      '  ELSE TienPhat ' +
+                      'END, ' +
+                      'LyDoPhat = CASE ' +
+                      '  WHEN TrangThai = 8 AND SoNgayTre >= :SoNgayTre THEN N''Phạt quá hạn'' ' +
+                      '  WHEN TrangThai = 9 THEN N''Phạt mất sách'' ' +
+                      '  ELSE LyDoPhat ' +
+                      'END, ' +
+                      'GhiChu = ISNULL(GhiChu + NCHAR(13)+NCHAR(10), N'''') + ' +
+                      'N''Đã tính tiền phạt vào '' + CONVERT(NVARCHAR(10), GETDATE(), 103) ' +
+                      'WHERE TrangThai IN (6, 8, 9) AND (TrangThai = 9 OR SoNgayTre >= :SoNgayTre)';
+    Query.Params.CreateParam(ftInteger, 'SoNgayTre', ptInput);
+    Query.Params.CreateParam(ftCurrency, 'TienPhatMoiNgay', ptInput);
+    Query.Params.CreateParam(ftCurrency, 'TienPhatMatSach', ptInput);
+    Query.ParamByName('SoNgayTre').AsInteger := SoNgayTreToiThieu;
+    Query.ParamByName('TienPhatMoiNgay').AsCurrency := TienPhatQuaHanMoiNgay;
+    Query.ParamByName('TienPhatMatSach').AsCurrency := TienPhatMatSach;
 
-    // Duyệt qua từng bản ghi cần tính phạt
-    FDQuery_TinhPhatCanXuLy.First;
-    while not FDQuery_TinhPhatCanXuLy.EOF do
-    begin
-      MuonTraID := FDQuery_TinhPhatCanXuLy.FieldByName('ID').AsLargeInt;
-      NgayHenTraValue := FDQuery_TinhPhatCanXuLy.FieldByName('NgayHenTra').AsDateTime;
-      TrangThai := FDQuery_TinhPhatCanXuLy.FieldByName('TrangThai').AsInteger;
-      SoNgayTreThucTe := FDQuery_TinhPhatCanXuLy.FieldByName('SoNgayTre').AsInteger; // Lấy từ view
-
-      // Kiểm tra trạng thái: Mất sách, Quá hạn, hoặc Đã trả trễ
-      if TrangThai = 9 then // "Mất sách"
+    FDConnectionAdmin.StartTransaction;
+    try
+      Query.ExecSQL;
+      Result := Query.RowsAffected;
+      FDConnectionAdmin.Commit;
+    except
+      on E: Exception do
       begin
-        TienPhatMoi := TienPhatMatSach;
-        LyDoPhatMoi := 'Phạt mất sách';
-        GhiChuPhatMoi := Format('Đã tính tiền phạt mất sách: %sđ vào %s', [FormatFloat('#,##0', TienPhatMatSach), FormatDateTime('dd/mm/yyyy', Today)]);
-      end
-      else if (TrangThai IN [6, 8]) and (SoNgayTreThucTe >= SoNgayTreToiThieu) then
-      begin
-        TienPhatMoi := SoNgayTreThucTe * TienPhatQuaHanMoiNgay;
-        LyDoPhatMoi := Format('Phạt quá hạn trả sách: %d ngày', [SoNgayTreThucTe]);
-        GhiChuPhatMoi := Format('Đã tính tiền phạt: %sđ (%d ngày x %sđ) vào %s', [FormatFloat('#,##0', TienPhatMoi), SoNgayTreThucTe, FormatFloat('#,##0', TienPhatQuaHanMoiNgay), FormatDateTime('dd/mm/yyyy', Today)]);
-      end
-      else
-      begin
-        FDQuery_TinhPhatCanXuLy.Next;
-        Continue; // Bỏ qua nếu không đủ điều kiện phạt
+        FDConnectionAdmin.Rollback;
+        raise Exception.Create('Lỗi khi cập nhật tiền phạt: ' + E.Message);
       end;
-
-      // Giới hạn độ dài chuỗi trước khi gán vào tham số
-      LyDoPhatMoi := Copy(LyDoPhatMoi, 1, 500);
-      GhiChuPhatMoi := Copy(GhiChuPhatMoi, 1, 500);
-
-      // Cập nhật tiền phạt và ghi đè GhiChu cho bản ghi này
-      try
-        FDQuery_UpdateTienPhat.Params.ParamByName('TienPhatMoi').AsCurrency := TienPhatMoi;
-        FDQuery_UpdateTienPhat.Params.ParamByName('LyDoPhatMoi').AsString := LyDoPhatMoi;
-        FDQuery_UpdateTienPhat.Params.ParamByName('GhiChuPhatMoi').AsString := GhiChuPhatMoi; // Ghi đè, không nối thêm
-        FDQuery_UpdateTienPhat.Params.ParamByName('ID').AsLargeInt := MuonTraID;
-        FDQuery_UpdateTienPhat.ExecSQL;
-        Inc(SoBanGhiCapNhat); // Tăng số bản ghi được cập nhật
-      except
-        on E: Exception do
-        begin
-          raise Exception.Create(Format('Lỗi cập nhật phạt cho ID %d: %s', [MuonTraID, E.Message]));
-        end;
-      end;
-
-      FDQuery_TinhPhatCanXuLy.Next;
     end;
-
-    // Commit transaction nếu không có lỗi
-    FDConnectionAdmin.Commit;
-    Result := SoBanGhiCapNhat; // Trả về số bản ghi đã cập nhật
-
-  except
-    on E: Exception do
-    begin
-      FDConnectionAdmin.Rollback;
-      raise; // Ném lại exception để form xử lý
-    end;
+  finally
+    Query.Free;
   end;
 end;
 

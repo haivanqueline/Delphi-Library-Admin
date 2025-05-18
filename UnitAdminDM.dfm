@@ -4,10 +4,11 @@ object DM_Admin: TDM_Admin
   PixelsPerInch = 144
   object FDConnectionAdmin: TFDConnection
     Params.Strings = (
-      'Server=HARIQUEF'
       'Database=KhoaLuan'
-      'User_Name=sa'
-      'Password=qwe123qwe'
+      'Server=localhost'
+      'OSAuthent=Yes'
+      'Encrypt=No'
+      'TrustServerCertificate=Yes'
       'DriverID=MSSQL')
     Connected = True
     Left = 456
@@ -23,7 +24,7 @@ object DM_Admin: TDM_Admin
         'hoai = :UserInput)'
       '  AND TrangThai = 1')
     Left = 368
-    Top = 72
+    Top = 8
     ParamData = <
       item
         Name = 'USERINPUT'
