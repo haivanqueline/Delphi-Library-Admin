@@ -1916,12 +1916,14 @@ procedure TfrmAdminMain.btnTK_XemClick(Sender: TObject);
 var
   SQL: string;
   LoaiTK: Integer;
+  ColIndex: Integer;
 begin
   if not SessionManager.HasPermission('BC_THONGKE') then
   begin
     ShowMessage('Bạn không có quyền!');
     Exit;
   end;
+
   LoaiTK := cboTK_LoaiThongKe.ItemIndex;
   if LoaiTK < 0 then
   begin
@@ -1929,8 +1931,15 @@ begin
     Exit;
   end;
 
-  // Đóng các Query thống kê khác nếu có
+  // Đóng tất cả các Query thống kê để tránh xung đột
   DM_Admin.FDQuery_ThongKeTLMuonNhieu.Close;
+  DM_Admin.FDQuery_ThongKeSVMuonNhieu.Close;
+  DM_Admin.FDQuery_ThongKeTaiLieuMat.Close;
+  DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Close;
+
+  // Xóa các cột hiện tại của dbgThongKe
+  dbgThongKe.Columns.Clear;
+  ColIndex := 0; // Khởi tạo chỉ số cột
 
   case LoaiTK of
     0: // Tài liệu mượn nhiều nhất
@@ -1947,19 +1956,178 @@ begin
         if DM_Admin.FDQuery_ThongKeTLMuonNhieu.Params.FindParam('DenNgay') = nil then
           DM_Admin.FDQuery_ThongKeTLMuonNhieu.Params.CreateParam(ftDate, 'DenNgay', ptInput);
         DM_Admin.FDQuery_ThongKeTLMuonNhieu.ParamByName('TuNgay').AsDate := dtpTK_TuNgay.Date;
-        // Cộng thêm 1 ngày vào DenNgay để bao gồm cả ngày đó
         DM_Admin.FDQuery_ThongKeTLMuonNhieu.ParamByName('DenNgay').AsDate := EndOfTheDay(dtpTK_DenNgay.Date);
         DM_Admin.FDQuery_ThongKeTLMuonNhieu.Open;
+
+        // Thêm cột động
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'MaTaiLieu';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Mã Tài Liệu';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'TenTaiLieu';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Tên Tài Liệu';
+        dbgThongKe.Columns[ColIndex].Width := 1000;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'SoLuotMuon';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Số Lượt Mượn';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+
         dbgThongKe.DataSource := DM_Admin.DataSource_ThongKeTLMuonNhieu;
       end;
     1: // Sinh viên mượn nhiều nhất
       begin
-         ShowMessage('Chức năng thống kê Sinh viên mượn nhiều chưa được cài đặt.');
-         dbgThongKe.DataSource := nil;
+        SQL := 'SELECT TOP 20 sv.MSSV, sv.HoLot + '' '' + sv.Ten AS TenSinhVien, COUNT(mt.ID) AS SoLuotMuon ' +
+               'FROM MuonTraTaiLieu mt JOIN SinhVien sv ON mt.MSSV = sv.MSSV ' +
+               'WHERE mt.TrangThai IN (4, 6, 8) ' +
+               'AND mt.NgayMuonThucTe BETWEEN :TuNgay AND :DenNgay ' +
+               'GROUP BY sv.MSSV, sv.HoLot, sv.Ten ' +
+               'ORDER BY SoLuotMuon DESC';
+        DM_Admin.FDQuery_ThongKeSVMuonNhieu.SQL.Text := SQL;
+        DM_Admin.FDQuery_ThongKeSVMuonNhieu.Params.Clear;
+        if DM_Admin.FDQuery_ThongKeSVMuonNhieu.Params.FindParam('TuNgay') = nil then
+          DM_Admin.FDQuery_ThongKeSVMuonNhieu.Params.CreateParam(ftDate, 'TuNgay', ptInput);
+        if DM_Admin.FDQuery_ThongKeSVMuonNhieu.Params.FindParam('DenNgay') = nil then
+          DM_Admin.FDQuery_ThongKeSVMuonNhieu.Params.CreateParam(ftDate, 'DenNgay', ptInput);
+        DM_Admin.FDQuery_ThongKeSVMuonNhieu.ParamByName('TuNgay').AsDate := dtpTK_TuNgay.Date;
+        DM_Admin.FDQuery_ThongKeSVMuonNhieu.ParamByName('DenNgay').AsDate := EndOfTheDay(dtpTK_DenNgay.Date);
+        DM_Admin.FDQuery_ThongKeSVMuonNhieu.Open;
+
+        // Thêm cột động
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'MSSV';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'MSSV';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'TenSinhVien';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Tên Sinh Viên';
+        dbgThongKe.Columns[ColIndex].Width := 300;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'SoLuotMuon';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Số Lượt Mượn';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+
+        dbgThongKe.DataSource := DM_Admin.DataSource_ThongKeSVMuonNhieu;
       end;
-  else
-    dbgThongKe.DataSource := nil;
+    2: // Tài liệu bị mất
+      begin
+        SQL := 'SELECT tl.MaTaiLieu, tl.TenTaiLieu, sv.MSSV, sv.HoLot + '' '' + sv.Ten AS TenSinhVien, mt.NgayMuonThucTe ' +
+               'FROM MuonTraTaiLieu mt ' +
+               'JOIN TaiLieuTongHop tl ON mt.TaiLieuID = tl.ID ' +
+               'JOIN SinhVien sv ON mt.MSSV = sv.MSSV ' +
+               'WHERE mt.TrangThai = 9 ' +
+               'AND mt.NgayCapNhat BETWEEN :TuNgay AND :DenNgay ' +
+               'ORDER BY mt.NgayCapNhat DESC';
+        DM_Admin.FDQuery_ThongKeTaiLieuMat.SQL.Text := SQL;
+        DM_Admin.FDQuery_ThongKeTaiLieuMat.Params.Clear;
+        if DM_Admin.FDQuery_ThongKeTaiLieuMat.Params.FindParam('TuNgay') = nil then
+          DM_Admin.FDQuery_ThongKeTaiLieuMat.Params.CreateParam(ftDate, 'TuNgay', ptInput);
+        if DM_Admin.FDQuery_ThongKeTaiLieuMat.Params.FindParam('DenNgay') = nil then
+          DM_Admin.FDQuery_ThongKeTaiLieuMat.Params.CreateParam(ftDate, 'DenNgay', ptInput);
+        DM_Admin.FDQuery_ThongKeTaiLieuMat.ParamByName('TuNgay').AsDate := dtpTK_TuNgay.Date;
+        DM_Admin.FDQuery_ThongKeTaiLieuMat.ParamByName('DenNgay').AsDate := EndOfTheDay(dtpTK_DenNgay.Date);
+        DM_Admin.FDQuery_ThongKeTaiLieuMat.Open;
+
+        // Thêm cột động
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'MaTaiLieu';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Mã Tài Liệu';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'TenTaiLieu';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Tên Tài Liệu';
+        dbgThongKe.Columns[ColIndex].Width := 800;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'MSSV';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'MSSV';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'TenSinhVien';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Tên Sinh Viên';
+        dbgThongKe.Columns[ColIndex].Width := 300;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'NgayMuonThucTe';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Ngày Mượn';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        // Định dạng ngày nếu cần (tuỳ chọn)
+        //if Assigned(dbgThongKe.Columns[ColIndex].Field) then
+         // dbgThongKe.Columns[ColIndex].Field.DisplayFormat := 'dd/mm/yyyy';
+
+        dbgThongKe.DataSource := DM_Admin.DataSource_ThongKeTaiLieuMat;
+      end;
+    3: // Tình hình mượn trả theo thời gian
+      begin
+        SQL := 'SELECT CAST(mt.NgayMuonThucTe AS DATE) AS Ngay, ' +
+               'SUM(CASE WHEN mt.TrangThai IN (4, 8) THEN 1 ELSE 0 END) AS SoLuongDangMuon, ' +
+               'SUM(CASE WHEN mt.TrangThai = 6 THEN 1 ELSE 0 END) AS SoLuongDaTra, ' +
+               'SUM(CASE WHEN mt.TrangThai = 8 THEN 1 ELSE 0 END) AS SoLuongQuaHan ' +
+               'FROM MuonTraTaiLieu mt ' +
+               'WHERE mt.NgayMuonThucTe BETWEEN :TuNgay AND :DenNgay ' +
+               'GROUP BY CAST(mt.NgayMuonThucTe AS DATE) ' +
+               'ORDER BY Ngay';
+        DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.SQL.Text := SQL;
+        DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Params.Clear;
+        if DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Params.FindParam('TuNgay') = nil then
+          DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Params.CreateParam(ftDate, 'TuNgay', ptInput);
+        if DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Params.FindParam('DenNgay') = nil then
+          DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Params.CreateParam(ftDate, 'DenNgay', ptInput);
+        DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.ParamByName('TuNgay').AsDate := dtpTK_TuNgay.Date;
+        DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.ParamByName('DenNgay').AsDate := EndOfTheDay(dtpTK_DenNgay.Date);
+        DM_Admin.FDQuery_ThongKeTinhHinhMuonTra.Open;
+
+        // Thêm cột động
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'Ngay';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Ngày';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        // Định dạng ngày nếu cần (tuỳ chọn)
+        //if Assigned(dbgThongKe.Columns[ColIndex].Field) then
+         // dbgThongKe.Columns[ColIndex].Field.DisplayFormat := 'dd/mm/yyyy';
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'SoLuongDangMuon';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Số Lượng Đang Mượn';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'SoLuongDaTra';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Số Lượng Đã Trả';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+        Inc(ColIndex);
+
+        dbgThongKe.Columns.Add; // Thêm cột
+        dbgThongKe.Columns[ColIndex].FieldName := 'SoLuongQuaHan';
+        dbgThongKe.Columns[ColIndex].Title.Caption := 'Số Lượng Quá Hạn';
+        dbgThongKe.Columns[ColIndex].Width := 200;
+
+        dbgThongKe.DataSource := DM_Admin.DataSource_ThongKeTinhHinhMuonTra;
+      end;
+    else
+      dbgThongKe.DataSource := nil;
   end;
+
+  // Ghi lịch sử hoạt động
+  GhiLichSuHoatDong('Xem thống kê', 'Loại thống kê: ' + cboTK_LoaiThongKe.Text + ', Từ ngày: ' +
+                    FormatDateTime('dd/mm/yyyy', dtpTK_TuNgay.Date) + ', Đến ngày: ' +
+                    FormatDateTime('dd/mm/yyyy', dtpTK_DenNgay.Date));
 end;
 
 procedure TfrmAdminMain.btnXacNhan_DongYClick(Sender: TObject);

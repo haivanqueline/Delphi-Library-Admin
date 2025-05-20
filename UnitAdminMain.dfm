@@ -157,7 +157,7 @@ object frmAdminMain: TfrmAdminMain
     Top = 49
     Width = 1095
     Height = 559
-    ActivePage = tsDuyetMuon
+    ActivePage = tsQuanLySinhVien
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -246,6 +246,8 @@ object frmAdminMain: TfrmAdminMain
         BevelOuter = bvNone
         ParentBackground = False
         TabOrder = 1
+        ExplicitTop = 447
+        ExplicitWidth = 1081
         object btnDuyetMuon_DongY: TBitBtn
           Left = 10
           Top = 10
@@ -624,8 +626,6 @@ object frmAdminMain: TfrmAdminMain
         BevelOuter = bvNone
         ParentBackground = False
         TabOrder = 1
-        ExplicitTop = 447
-        ExplicitWidth = 1081
         object btnQuaHan_GuiThongBao: TBitBtn
           Left = 6
           Top = 10
@@ -777,7 +777,6 @@ object frmAdminMain: TfrmAdminMain
             Font.Name = 'Segoe UI'
             Font.Style = []
             ParentFont = False
-            ExplicitTop = 20
             ExplicitWidth = 34
           end
         end
@@ -1401,14 +1400,14 @@ object frmAdminMain: TfrmAdminMain
         Left = 0
         Top = 0
         Width = 1087
-        Height = 50
+        Height = 38
         Align = alTop
         BevelOuter = bvNone
         ParentBackground = False
         TabOrder = 0
         object Label1: TLabel
           Left = 54
-          Top = 15
+          Top = 4
           Width = 134
           Height = 21
           Caption = 'Ch'#7885'n lo'#7841'i th'#7889'ng k'#234':'
@@ -1421,7 +1420,7 @@ object frmAdminMain: TfrmAdminMain
         end
         object cboTK_LoaiThongKe: TComboBox
           Left = 194
-          Top = 11
+          Top = 4
           Width = 300
           Height = 25
           Font.Charset = DEFAULT_CHARSET
@@ -1434,16 +1433,16 @@ object frmAdminMain: TfrmAdminMain
           Items.Strings = (
             'T'#224'i li'#7879'u m'#432#7907'n nhi'#7873'u nh'#7845't'
             'Sinh vi'#234'n m'#432#7907'n nhi'#7873'u nh'#7845't'
-            'T'#224'i li'#7879'u qu'#225' h'#7841'n'
+            'T'#224'i li'#7879'u b'#7883' m'#7845't'
             'T'#236'nh h'#236'nh m'#432#7907'n tr'#7843' theo th'#7901'i gian')
         end
         object dtpTK_TuNgay: TDateTimePicker
           Left = 500
-          Top = 8
+          Top = 3
           Width = 140
           Height = 28
-          Date = 45780.000000000000000000
-          Time = 45780.000000000000000000
+          Date = 45748.000000000000000000
+          Time = 45748.000000000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -1454,11 +1453,11 @@ object frmAdminMain: TfrmAdminMain
         end
         object dtpTK_DenNgay: TDateTimePicker
           Left = 654
-          Top = 8
+          Top = 3
           Width = 140
           Height = 28
-          Date = 45780.000000000000000000
-          Time = 45780.000000000000000000
+          Date = 45797.000000000000000000
+          Time = 45797.000000000000000000
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -13
@@ -1469,7 +1468,7 @@ object frmAdminMain: TfrmAdminMain
         end
         object btnTK_Xem: TBitBtn
           Left = 800
-          Top = 8
+          Top = 3
           Width = 140
           Height = 28
           Caption = 'Xem Th'#7889'ng K'#234
@@ -1485,17 +1484,19 @@ object frmAdminMain: TfrmAdminMain
       end
       object pnlTK_KetQua: TPanel
         Left = 0
-        Top = 50
+        Top = 38
         Width = 1087
-        Height = 474
+        Height = 486
         Align = alClient
         BevelOuter = bvNone
         TabOrder = 1
+        ExplicitTop = 50
+        ExplicitHeight = 474
         object dbgThongKe: TDBGrid
           Left = 0
           Top = 0
           Width = 1087
-          Height = 474
+          Height = 486
           Align = alClient
           DataSource = DM_Admin.DataSource_ThongKeTLMuonNhieu
           Font.Charset = DEFAULT_CHARSET
@@ -1503,7 +1504,7 @@ object frmAdminMain: TfrmAdminMain
           Font.Height = -12
           Font.Name = 'Segoe UI'
           Font.Style = []
-          Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
+          Options = [dgTitles, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
           ParentFont = False
           TabOrder = 0
           TitleFont.Charset = DEFAULT_CHARSET
@@ -1511,28 +1512,6 @@ object frmAdminMain: TfrmAdminMain
           TitleFont.Height = -12
           TitleFont.Name = 'Segoe UI'
           TitleFont.Style = [fsBold]
-          Columns = <
-            item
-              Expanded = False
-              FieldName = 'MaTaiLieu'
-              Title.Caption = 'M'#227' t'#224'i li'#7879'u'
-              Width = 100
-              Visible = True
-            end
-            item
-              Expanded = False
-              FieldName = 'TenTaiLieu'
-              Title.Caption = 'T'#234'n t'#224'i li'#7879'u'
-              Width = 800
-              Visible = True
-            end
-            item
-              Expanded = False
-              FieldName = 'SoLuotMuon'
-              Title.Caption = 'S'#7889' l'#432#7907't m'#432#7907'n'
-              Width = 100
-              Visible = True
-            end>
         end
       end
     end

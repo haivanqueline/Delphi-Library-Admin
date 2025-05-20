@@ -43,6 +43,12 @@ type
     FDQuery_LichSuHoatDong: TFDQuery;
     FDQuery_TuDongTuChoiYeuCauMuon: TFDQuery;
     FDQuery_TuDongHuyXacNhanMuon: TFDQuery;
+    FDQuery_ThongKeSVMuonNhieu: TFDQuery;
+    FDQuery_ThongKeTaiLieuMat: TFDQuery;
+    FDQuery_ThongKeTinhHinhMuonTra: TFDQuery;
+    DataSource_ThongKeSVMuonNhieu: TDataSource;
+    DataSource_ThongKeTinhHinhMuonTra: TDataSource;
+    DataSource_ThongKeTaiLieuMat: TDataSource;
   private
     { Private declarations }
   public

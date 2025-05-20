@@ -59,13 +59,13 @@ object DM_Admin: TDM_Admin
     SQL.Strings = (
       'SELECT MSSV, HoLot, Ten, NgaySinh, TrangThai, TenTrangThai'
       'FROM SinhVien')
-    Left = 888
-    Top = 688
+    Left = 1024
+    Top = 704
   end
   object DataSource_QLSV: TDataSource
     DataSet = FDQuery_QLSV
-    Left = 888
-    Top = 648
+    Left = 1024
+    Top = 664
   end
   object FDQuery_QLTT: TFDQuery
     Connection = FDConnectionAdmin
@@ -95,13 +95,13 @@ object DM_Admin: TDM_Admin
       'SELECT * FROM v_ChiTietMuonTraTaiLieu'
       'WHERE TrangThai = 1 -- Ch'#7881' l'#7845'y "Ch'#7901' duy'#7879't m'#432#7907'n"'
       'ORDER BY NgayYeuCau ASC -- '#431'u ti'#234'n y'#234'u c'#7847'u c'#361' h'#417'n')
-    Left = 656
-    Top = 152
+    Left = 616
+    Top = 96
   end
   object DataSource_DuyetMuon: TDataSource
     DataSet = FDQuery_DuyetMuon
-    Left = 664
-    Top = 112
+    Left = 624
+    Top = 56
   end
   object FDQuery_UpdateDuyetMuon: TFDQuery
     Connection = FDConnectionAdmin
@@ -115,8 +115,8 @@ object DM_Admin: TDM_Admin
         'o END -- G'#225'n l'#253' do n'#7871'u t'#7915' ch'#7889'i'
       'WHERE ID = :ID'
       '  AND TrangThai = 1 -- Ch'#7881' c'#7853'p nh'#7853't khi '#273'ang "Ch'#7901' duy'#7879't m'#432#7907'n"')
-    Left = 664
-    Top = 72
+    Left = 624
+    Top = 16
     ParamData = <
       item
         Name = 'TRANGTHAIMOI'
@@ -145,13 +145,13 @@ object DM_Admin: TDM_Admin
       'SELECT * FROM v_ChiTietMuonTraTaiLieu'
       'WHERE TrangThai = 2 -- Ch'#7881' l'#7845'y "'#272#227' duy'#7879't m'#432#7907'n"'
       'ORDER BY NgayDuyet ASC')
-    Left = 720
-    Top = 344
+    Left = 656
+    Top = 272
   end
   object DataSource_XacNhanMuon: TDataSource
     DataSet = FDQuery_XacNhanMuon
-    Left = 728
-    Top = 312
+    Left = 664
+    Top = 240
   end
   object FDQuery_UpdateXacNhanMuon: TFDQuery
     Connection = FDConnectionAdmin
@@ -163,8 +163,8 @@ object DM_Admin: TDM_Admin
       '    -- GhiChu c'#243' th'#7875' c'#7853'p nh'#7853't th'#234'm n'#7871'u c'#7847'n'
       'WHERE ID = :ID'
       '  AND TrangThai = 2 -- Ch'#7881' c'#7853'p nh'#7853't khi '#273'ang "'#272#227' duy'#7879't m'#432#7907'n"')
-    Left = 736
-    Top = 272
+    Left = 672
+    Top = 200
     ParamData = <
       item
         Name = 'THUTHUID'
@@ -253,23 +253,12 @@ object DM_Admin: TDM_Admin
         'WHERE mt.TrangThai IN (4, 6, 8) -- T'#237'nh c'#225'c l'#432#7907't '#273#227' m'#432#7907'n, '#273#227' tr'#7843 +
         ', qu'#225' h'#7841'n'
       
-        '      -- AND mt.NgayMuonThucTe BETWEEN :TuNgay AND :DenNgay -- T' +
-        'h'#234'm n'#7871'u mu'#7889'n l'#7885'c theo th'#7901'i gian'
+        '--AND mt.NgayMuonThucTe BETWEEN :TuNgay AND :DenNgay -- Th'#234'm n'#7871'u' +
+        ' mu'#7889'n l'#7885'c theo th'#7901'i gian'
       'GROUP BY tl.MaTaiLieu, tl.TenTaiLieu'
       'ORDER BY SoLuotMuon DESC')
     Left = 464
     Top = 472
-    ParamData = <
-      item
-        Name = 'TuNgay'
-        DataType = ftDate
-        ParamType = ptInput
-      end
-      item
-        Name = 'DenNgay'
-        DataType = ftDate
-        ParamType = ptInput
-      end>
   end
   object DataSource_ThongKeTLMuonNhieu: TDataSource
     DataSet = FDQuery_ThongKeTLMuonNhieu
@@ -288,8 +277,8 @@ object DM_Admin: TDM_Admin
       
         '  AND TrangThai = 2 -- Ch'#7881' h'#7911'y khi '#273'ang '#7903' tr'#7841'ng th'#225'i "'#272#227' duy'#7879't m' +
         #432#7907'n"')
-    Left = 784
-    Top = 480
+    Left = 720
+    Top = 408
     ParamData = <
       item
         Name = 'THUTHUID'
@@ -538,8 +527,8 @@ object DM_Admin: TDM_Admin
       '    (:VaiTro IN (3, 4) AND ls.ThuThuID = :ThuThuID)'
       '  )'
       'ORDER BY ls.ThoiGian DESC;')
-    Left = 720
-    Top = 616
+    Left = 840
+    Top = 320
     ParamData = <
       item
         Name = 'VAITRO'
@@ -569,8 +558,8 @@ object DM_Admin: TDM_Admin
       '    TrangThai = 1'
       '    AND NgayHenMuon IS NOT NULL'
       '    AND CAST(NgayHenMuon AS DATE) < CAST(GETDATE() AS DATE);')
-    Left = 912
-    Top = 136
+    Left = 904
+    Top = 24
   end
   object FDQuery_TuDongHuyXacNhanMuon: TFDQuery
     Connection = FDConnectionAdmin
@@ -591,7 +580,37 @@ object DM_Admin: TDM_Admin
       '    TrangThai = 2'
       '    AND NgayHenMuon IS NOT NULL'
       '    AND CAST(NgayHenMuon AS DATE) < CAST(GETDATE() AS DATE);')
-    Left = 912
-    Top = 224
+    Left = 904
+    Top = 112
+  end
+  object FDQuery_ThongKeSVMuonNhieu: TFDQuery
+    Connection = FDConnectionAdmin
+    Left = 640
+    Top = 640
+  end
+  object FDQuery_ThongKeTaiLieuMat: TFDQuery
+    Connection = FDConnectionAdmin
+    Left = 720
+    Top = 728
+  end
+  object FDQuery_ThongKeTinhHinhMuonTra: TFDQuery
+    Connection = FDConnectionAdmin
+    Left = 856
+    Top = 608
+  end
+  object DataSource_ThongKeSVMuonNhieu: TDataSource
+    DataSet = FDQuery_ThongKeSVMuonNhieu
+    Left = 616
+    Top = 608
+  end
+  object DataSource_ThongKeTinhHinhMuonTra: TDataSource
+    DataSet = FDQuery_ThongKeTinhHinhMuonTra
+    Left = 856
+    Top = 576
+  end
+  object DataSource_ThongKeTaiLieuMat: TDataSource
+    DataSet = FDQuery_ThongKeTaiLieuMat
+    Left = 728
+    Top = 704
   end
 end
